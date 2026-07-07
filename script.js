@@ -208,21 +208,17 @@ function unlockSections() {
     if (sectionsUnlocked) return;
     sectionsUnlocked = true;
 
-    const prelockCard = document.getElementById('prelock-card');
-    const prelock = document.getElementById('prelock');
+    const wrapper = document.getElementById('locked-sections');
     const gate = document.getElementById('passphrase-gate');
 
-    // Dissolve the pre-lock, then reveal the passphrase gate
+    // Reveal the passphrase gate
     setTimeout(() => {
-        prelockCard.classList.add('unlocking');
-        prelock.classList.add('lock-overlay'); // ensure animation target
-        setTimeout(() => {
-            prelockCard.classList.add('hidden');
-            gate.classList.remove('hidden');
-            gate.querySelector('.gate-inner').classList.add('visible');
-            document.getElementById('passphrase-input').focus();
-        }, 1500);
-    }, 2000);
+        wrapper.classList.remove('hidden');
+        gate.classList.remove('hidden');
+        gate.querySelector('.gate-inner').classList.add('visible');
+        const input = document.getElementById('passphrase-input');
+        if (input) input.focus();
+    }, 1500);
 }
 
 // Convert base64 to ArrayBuffer
@@ -262,7 +258,7 @@ async function decryptContent(passphrase) {
 }
 
 function renderSecretContent(content) {
-    // Render letter
+    // ---- Letter ----
     const letterContent = document.getElementById('letter-content');
     letterContent.innerHTML = `
         <div class="letter">
@@ -271,10 +267,47 @@ function renderSecretContent(content) {
         </div>
     `;
 
-    // Render photos
+    // ---- Reasons ticker ----
+    const reasons = content.reasons && content.reasons.length ? content.reasons : [];
+    const reasonsContent = document.getElementById('reasons-content');
+    if (reasons.length) {
+        // Duplicate list for seamless scroll
+        const items = reasons.concat(reasons);
+        reasonsContent.innerHTML = `
+            <h3 class="section-heading">💖 Reasons I Adore You</h3>
+            <div class="ticker">
+                <div class="ticker-track">
+                    ${items.map(r => `<span class="ticker-item">${r}</span>`).join('')}
+                </div>
+            </div>
+        `;
+    }
+
+    // ---- Memory timeline ----
+    const timeline = content.timeline && content.timeline.length ? content.timeline : [];
+    const timelineContent = document.getElementById('timeline-content');
+    if (timeline.length) {
+        timelineContent.innerHTML = `
+            <h3 class="section-heading">📖 Our Story So Far</h3>
+            <div class="timeline">
+                ${timeline.map((t, i) => `
+                    <div class="timeline-item ${i % 2 === 0 ? 'left' : 'right'}">
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-card">
+                            <span class="timeline-date">${t.date || ''}</span>
+                            <h4 class="timeline-title">${t.title || ''}</h4>
+                            <p class="timeline-text">${t.text || ''}</p>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+    }
+
+    // ---- Photos ----
     const photoContent = document.getElementById('photo-content');
     let galleryHTML = `
-        <h3 class="gallery-heading">📸 Our Memories Together</h3>
+        <h3 class="section-heading">📸 Our Memories Together</h3>
         <p class="gallery-subtext">Every photo tells a story of us ✨</p>
         <div class="photo-gallery">
     `;
@@ -289,15 +322,28 @@ function renderSecretContent(content) {
     galleryHTML += '</div>';
     photoContent.innerHTML = galleryHTML;
 
-    // Reveal cards
-    const letterSection = document.getElementById('letter-section');
-    const photoSection = document.getElementById('photo-section');
-    letterSection.classList.remove('hidden');
-    letterContent.classList.add('visible');
-    setTimeout(() => {
-        photoSection.classList.remove('hidden');
-        photoContent.classList.add('visible');
-    }, 600);
+    // ---- Interactive features (generic, no secret content) ----
+    renderCandleBlow();
+    renderWishJar();
+    initEasterEgg();
+
+    // ---- Reveal all sections with a staggered cascade ----
+    const sections = [
+        'letter-section',
+        reasons.length ? 'reasons-section' : null,
+        timeline.length ? 'timeline-section' : null,
+        'photo-section',
+        'candle-section',
+        'wishjar-section'
+    ].filter(Boolean);
+
+    sections.forEach((id, i) => {
+        setTimeout(() => {
+            const sec = document.getElementById(id);
+            sec.classList.remove('hidden');
+            sec.querySelector('.unlocked-content').classList.add('visible');
+        }, i * 500);
+    });
 }
 
 function setupPassphraseGate() {
@@ -340,6 +386,201 @@ function setupPassphraseGate() {
     input.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') attempt();
     });
+}
+
+// ============ BLOW OUT THE CANDLES ============
+function renderCandleBlow() {
+    const el = document.getElementById('candle-content');
+    el.innerHTML = `
+        <h3 class="section-heading">🎂 Make a Wish</h3>
+        <p class="gallery-subtext">Blow out the candles — click them, or use the mic and actually blow!</p>
+        <div class="big-cake" id="big-cake">
+            <div class="candles-row" id="candles-row">
+                ${[0,1,2,3,4].map(i => `
+                    <div class="big-candle" data-lit="1">
+                        <div class="big-flame"></div>
+                    </div>
+                `).join('')}
+            </div>
+            <div class="big-cake-top"></div>
+            <div class="big-cake-mid"></div>
+            <div class="big-cake-bottom"></div>
+        </div>
+        <div class="candle-controls">
+            <button class="wish-btn" id="mic-blow-btn">🎤 Blow using mic</button>
+        </div>
+        <p class="wish-made hidden" id="wish-made">✨ You made a wish! May it come true 💫</p>
+    `;
+
+    const candles = el.querySelectorAll('.big-candle');
+    const wishMade = document.getElementById('wish-made');
+
+    function extinguish(candle) {
+        if (candle.dataset.lit === '0') return;
+        candle.dataset.lit = '0';
+        candle.classList.add('out');
+        const puff = document.createElement('div');
+        puff.className = 'smoke-puff';
+        candle.appendChild(puff);
+        setTimeout(() => puff.remove(), 1000);
+        checkAllOut();
+    }
+
+    function checkAllOut() {
+        const anyLit = Array.from(candles).some(c => c.dataset.lit === '1');
+        if (!anyLit) {
+            wishMade.classList.remove('hidden');
+            launchConfetti();
+        }
+    }
+
+    candles.forEach(c => c.addEventListener('click', () => extinguish(c)));
+
+    // Mic-based blowing
+    const micBtn = document.getElementById('mic-blow-btn');
+    micBtn.addEventListener('click', async () => {
+        micBtn.disabled = true;
+        micBtn.textContent = '🎤 Listening... blow!';
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            const ac = new (window.AudioContext || window.webkitAudioContext)();
+            const source = ac.createMediaStreamSource(stream);
+            const analyser = ac.createAnalyser();
+            analyser.fftSize = 512;
+            source.connect(analyser);
+            const dataArr = new Uint8Array(analyser.frequencyBinCount);
+
+            function detect() {
+                analyser.getByteFrequencyData(dataArr);
+                let sum = 0;
+                for (let i = 0; i < 30; i++) sum += dataArr[i];
+                const avg = sum / 30;
+
+                if (avg > 90) {
+                    const lit = Array.from(candles).find(c => c.dataset.lit === '1');
+                    if (lit) extinguish(lit);
+                }
+
+                const stillLit = Array.from(candles).some(c => c.dataset.lit === '1');
+                if (stillLit) {
+                    requestAnimationFrame(detect);
+                } else {
+                    stream.getTracks().forEach(t => t.stop());
+                    ac.close();
+                    micBtn.textContent = '🎉 All blown out!';
+                }
+            }
+            detect();
+        } catch (err) {
+            micBtn.disabled = false;
+            micBtn.textContent = '🎤 Mic blocked — click candles instead';
+        }
+    });
+}
+
+// ============ WISH JAR ============
+function renderWishJar() {
+    const el = document.getElementById('wishjar-content');
+    el.innerHTML = `
+        <h3 class="section-heading">🫙 Birthday Wish Jar</h3>
+        <p class="gallery-subtext">Leave a birthday wish for Nireshnee — it floats up into the jar 💌</p>
+        <div class="wish-form">
+            <input type="text" id="wish-input" placeholder="Write a birthday wish..." maxlength="120">
+            <button class="wish-btn" id="wish-submit">Add Wish ✨</button>
+        </div>
+        <div class="wish-jar" id="wish-jar"></div>
+    `;
+
+    const STORAGE_KEY = 'nireshnee-birthday-wishes';
+    const jar = document.getElementById('wish-jar');
+    const input = document.getElementById('wish-input');
+    const submit = document.getElementById('wish-submit');
+
+    function loadWishes() {
+        try {
+            return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+        } catch (e) { return []; }
+    }
+
+    function saveWishes(wishes) {
+        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(wishes)); } catch (e) {}
+    }
+
+    const colors = ['#ff6b9d', '#c44dff', '#ffd93d', '#4dffb8', '#4dc9ff'];
+
+    function addBubble(text, animate) {
+        const bubble = document.createElement('div');
+        bubble.className = 'wish-bubble';
+        bubble.textContent = text;
+        bubble.style.background = colors[Math.floor(Math.random() * colors.length)] + '33';
+        bubble.style.borderColor = colors[Math.floor(Math.random() * colors.length)] + '66';
+        if (animate) bubble.classList.add('rising');
+        jar.appendChild(bubble);
+    }
+
+    loadWishes().forEach(w => addBubble(w, false));
+
+    function submitWish() {
+        const text = input.value.trim();
+        if (!text) return;
+        const wishes = loadWishes();
+        wishes.push(text);
+        saveWishes(wishes);
+        addBubble(text, true);
+        input.value = '';
+        for (let i = 0; i < 8; i++) {
+            setTimeout(() => createSparkle(
+                jar.getBoundingClientRect().left + Math.random() * jar.offsetWidth,
+                jar.getBoundingClientRect().top + Math.random() * 60
+            ), i * 40);
+        }
+    }
+
+    submit.addEventListener('click', submitWish);
+    input.addEventListener('keydown', e => { if (e.key === 'Enter') submitWish(); });
+}
+
+// ============ EASTER EGG (click title 5x) ============
+function initEasterEgg() {
+    const title = document.querySelector('.title');
+    if (!title || title.dataset.eggBound) return;
+    title.dataset.eggBound = '1';
+    title.style.cursor = 'pointer';
+
+    let clicks = 0;
+    let timer = null;
+
+    title.addEventListener('click', () => {
+        clicks++;
+        clearTimeout(timer);
+        timer = setTimeout(() => { clicks = 0; }, 1500);
+        if (clicks >= 5) {
+            clicks = 0;
+            triggerEasterEgg();
+        }
+    });
+}
+
+function triggerEasterEgg() {
+    const msg = document.createElement('div');
+    msg.className = 'easter-egg-msg';
+    msg.innerHTML = '💝 You found the secret! Nireshnee, you are one in a million 💝';
+    document.body.appendChild(msg);
+    setTimeout(() => msg.remove(), 4000);
+
+    const hearts = ['💖', '💕', '💗', '💓', '💞', '❤️', '🥰', '✨'];
+    for (let i = 0; i < 40; i++) {
+        setTimeout(() => {
+            const heart = document.createElement('div');
+            heart.className = 'floating-heart';
+            heart.textContent = hearts[Math.floor(Math.random() * hearts.length)];
+            heart.style.left = Math.random() * 100 + 'vw';
+            heart.style.fontSize = (Math.random() * 1.5 + 1) + 'rem';
+            heart.style.animationDuration = (Math.random() * 2 + 3) + 's';
+            document.body.appendChild(heart);
+            setTimeout(() => heart.remove(), 5000);
+        }, i * 60);
+    }
 }
 
 function updateWithFlip(element, newValue, key) {

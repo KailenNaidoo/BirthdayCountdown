@@ -18,6 +18,19 @@ const payload = {
 <p>This is the <em>real</em> hidden letter — it was encrypted and could only be revealed with the secret passphrase. Nobody could read it just by snooping the files. 🔐</p>
 <p>When you replace this sample with the real thing, your heartfelt words will be safe here, waiting just for you.</p>
 <p class="letter-sign">With all my love,<br><span class="letter-signature">Forever yours 💖</span></p>`,
+    reasons: [
+        'Your smile lights up every room',
+        'The way you laugh at your own jokes',
+        'How kind you are to everyone',
+        'Your unstoppable determination',
+        'The way you make ordinary days magical',
+        'Your beautiful, generous heart'
+    ],
+    timeline: [
+        { date: 'The Beginning', title: 'When we first met', text: 'A moment that changed everything. (Replace with your real memory.)' },
+        { date: 'A Special Day', title: 'Our favorite adventure', text: 'That unforgettable time together. (Editable placeholder.)' },
+        { date: 'Now', title: 'Celebrating you', text: 'Another year of the wonderful you. Here is to many more!' }
+    ],
     photos: [
         { caption: 'Our first memory together', data: svgPhoto('#ff6b9d', 'Photo 1') },
         { caption: "That time we couldn't stop laughing", data: svgPhoto('#4dc9ff', 'Photo 2') },

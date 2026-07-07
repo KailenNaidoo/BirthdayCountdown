@@ -87,23 +87,14 @@
             </div>
         </div>
 
-        <!-- Locked Sections -->
-        <div class="locked-sections">
-            <!-- Pre-countdown lock notice -->
-            <div class="locked-card" id="prelock-card">
-                <div class="lock-overlay" id="prelock">
-                    <div class="lock-icon">🔒</div>
-                    <p class="lock-text">A personal letter &amp; photo gallery for Nireshnee</p>
-                    <p class="lock-subtext">Encrypted &amp; unlocks on July 23, 2026</p>
-                </div>
-            </div>
-
-            <!-- Passphrase gate (revealed after countdown) -->
+        <!-- Locked Sections — hidden entirely until the birthday -->
+        <div class="locked-sections hidden" id="locked-sections">
+            <!-- Passphrase gate (revealed on the day) -->
             <div class="locked-card hidden" id="passphrase-gate">
                 <div class="gate-inner">
                     <div class="lock-icon">🔓</div>
                     <h3 class="gate-title">The wait is over, Nireshnee!</h3>
-                    <p class="gate-subtext">Enter your secret passphrase to reveal your letter and photos</p>
+                    <p class="gate-subtext">Enter your secret passphrase to reveal everything waiting for you</p>
                     <div class="gate-form">
                         <input type="password" id="passphrase-input" placeholder="Enter passphrase..." autocomplete="off">
                         <button id="unlock-btn">Unlock 💖</button>
@@ -117,9 +108,29 @@
                 <div class="unlocked-content" id="letter-content"></div>
             </div>
 
-            <!-- Revealed photo gallery -->
+            <!-- Reasons ticker -->
+            <div class="locked-card hidden" id="reasons-section">
+                <div class="unlocked-content" id="reasons-content"></div>
+            </div>
+
+            <!-- Memory timeline -->
+            <div class="locked-card hidden" id="timeline-section">
+                <div class="unlocked-content" id="timeline-content"></div>
+            </div>
+
+            <!-- Photo gallery -->
             <div class="locked-card hidden" id="photo-section">
                 <div class="unlocked-content" id="photo-content"></div>
+            </div>
+
+            <!-- Blow out the candles -->
+            <div class="locked-card hidden" id="candle-section">
+                <div class="unlocked-content" id="candle-content"></div>
+            </div>
+
+            <!-- Wish jar -->
+            <div class="locked-card hidden" id="wishjar-section">
+                <div class="unlocked-content" id="wishjar-content"></div>
             </div>
         </div>
 

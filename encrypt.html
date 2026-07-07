@@ -71,6 +71,12 @@
     <label for="letter">Personal Letter (HTML allowed — use &lt;p&gt; for paragraphs)</label>
     <textarea id="letter" placeholder="<p>Dear Nireshnee,</p><p>...</p>"></textarea>
 
+    <label for="reasons">Reasons I Adore You (one per line — shown as a scrolling ticker)</label>
+    <textarea id="reasons" style="min-height:120px;" placeholder="Your smile lights up every room&#10;The way you laugh&#10;How kind you are"></textarea>
+
+    <label for="timeline">Memory Timeline (one per line, format: Date | Title | Text)</label>
+    <textarea id="timeline" style="min-height:120px;" placeholder="2021 | When we met | The day everything changed&#10;2023 | Our trip | Best week ever"></textarea>
+
     <label>Photos (with captions)</label>
     <div id="photos"></div>
     <button type="button" id="add-photo">+ Add Photo</button>
@@ -136,6 +142,17 @@
                 return;
             }
 
+            // Parse reasons (one per line)
+            const reasons = document.getElementById('reasons').value
+                .split('\n').map(s => s.trim()).filter(Boolean);
+
+            // Parse timeline (Date | Title | Text per line)
+            const timeline = document.getElementById('timeline').value
+                .split('\n').map(s => s.trim()).filter(Boolean).map(line => {
+                    const parts = line.split('|').map(p => p.trim());
+                    return { date: parts[0] || '', title: parts[1] || '', text: parts[2] || '' };
+                });
+
             // Collect photos
             const photos = [];
             const wraps = document.querySelectorAll('.photo-input');
@@ -148,7 +165,7 @@
                 }
             }
 
-            const payload = JSON.stringify({ letter, photos });
+            const payload = JSON.stringify({ letter, reasons, timeline, photos });
             const enc = new TextEncoder();
             const plaintext = enc.encode(payload);
 
