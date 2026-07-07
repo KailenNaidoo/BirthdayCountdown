@@ -169,6 +169,7 @@ function updateCountdown() {
         cakeSection.classList.add('hidden');
         document.querySelector('.progress-section').classList.add('hidden');
         celebration.classList.remove('hidden');
+        unlockSections();
         launchConfetti();
         return;
     }
@@ -196,6 +197,41 @@ function updateCountdown() {
     progressFill.style.width = progress + '%';
     progressGlow.style.left = `calc(${progress}% - 20px)`;
     progressText.textContent = `${progress.toFixed(2)}% of the way to Nireshnee's special day!`;
+}
+
+// ============ UNLOCK SECTIONS ============
+let sectionsUnlocked = false;
+
+function unlockSections() {
+    if (sectionsUnlocked) return;
+    sectionsUnlocked = true;
+
+    const letterSection = document.getElementById('letter-section');
+    const photoSection = document.getElementById('photo-section');
+    const letterLock = document.getElementById('letter-lock');
+    const photoLock = document.getElementById('photo-lock');
+    const letterContent = document.getElementById('letter-content');
+    const photoContent = document.getElementById('photo-content');
+
+    // Animate unlock for letter (with slight delay)
+    setTimeout(() => {
+        letterSection.classList.add('unlocking');
+        setTimeout(() => {
+            letterLock.style.display = 'none';
+            letterContent.classList.remove('hidden');
+            letterContent.classList.add('visible');
+        }, 1500);
+    }, 2000);
+
+    // Animate unlock for photos (staggered after letter)
+    setTimeout(() => {
+        photoSection.classList.add('unlocking');
+        setTimeout(() => {
+            photoLock.style.display = 'none';
+            photoContent.classList.remove('hidden');
+            photoContent.classList.add('visible');
+        }, 1500);
+    }, 4000);
 }
 
 function updateWithFlip(element, newValue, key) {
