@@ -1,0 +1,14 @@
+# Raw/original photos — NEVER commit these to a public repo.
+# Put your original images here while encrypting; only secret.enc.json (encrypted) gets committed.
+private/
+photos/
+originals/
+*.jpg
+*.jpeg
+*.png
+*.gif
+*.webp
+*.heic
+
+# The encrypted bundle IS safe to commit (it's useless without the passphrase)
+!secret.enc.json

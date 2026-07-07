@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔐 Encrypt Birthday Content (Local Tool)</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: system-ui, sans-serif;
+            background: #0a0015;
+            color: #fff;
+            padding: 2rem;
+            max-width: 800px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+        h1 { margin-bottom: 0.5rem; color: #ff6b9d; }
+        .warn {
+            background: rgba(255, 200, 0, 0.1);
+            border: 1px solid rgba(255, 200, 0, 0.3);
+            border-radius: 10px;
+            padding: 1rem;
+            margin: 1rem 0;
+            font-size: 0.9rem;
+        }
+        label { display: block; margin: 1.5rem 0 0.5rem; font-weight: 600; color: #c9b8ff; }
+        input, textarea {
+            width: 100%;
+            padding: 0.8rem;
+            border-radius: 8px;
+            border: 1px solid rgba(255,255,255,0.15);
+            background: rgba(255,255,255,0.05);
+            color: #fff;
+            font-family: inherit;
+            font-size: 0.95rem;
+        }
+        textarea { min-height: 200px; resize: vertical; }
+        button {
+            margin-top: 1.5rem;
+            padding: 0.9rem 1.5rem;
+            border: none;
+            border-radius: 50px;
+            background: linear-gradient(135deg, #ff6b9d, #c44dff);
+            color: #fff;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        button:hover { opacity: 0.9; }
+        button:disabled { opacity: 0.4; cursor: not-allowed; }
+        .photo-input { margin-bottom: 1rem; padding: 1rem; border: 1px dashed rgba(255,255,255,0.2); border-radius: 8px; }
+        .status { margin-top: 1.5rem; padding: 1rem; border-radius: 8px; font-size: 0.9rem; }
+        .status.ok { background: rgba(77,255,136,0.1); border: 1px solid rgba(77,255,136,0.3); }
+        .status.err { background: rgba(255,77,109,0.1); border: 1px solid rgba(255,77,109,0.3); }
+        small { color: #b8b8d4; }
+        .thumb { max-width: 80px; max-height: 80px; border-radius: 6px; margin-top: 0.5rem; }
+    </style>
+</head>
+<body>
+    <h1>🔐 Encrypt Birthday Content</h1>
+    <p><small>This tool runs 100% in your browser. Nothing is uploaded anywhere. It produces one encrypted file (<code>secret.enc.json</code>) that you drop into the repo.</small></p>
+
+    <div class="warn">
+        ⚠️ <strong>Keep this file (encrypt.html) out of the public repo</strong> if you like, though it contains no secrets — it's just the tool. The passphrase you choose is what protects everything. Choose something memorable but not guessable, and share it with Nireshnee privately.
+    </div>
+
+    <label for="passphrase">Passphrase (this is the key — don't lose it!)</label>
+    <input type="text" id="passphrase" placeholder="e.g. our-first-trip-2021">
+
+    <label for="letter">Personal Letter (HTML allowed — use &lt;p&gt; for paragraphs)</label>
+    <textarea id="letter" placeholder="<p>Dear Nireshnee,</p><p>...</p>"></textarea>
+
+    <label>Photos (with captions)</label>
+    <div id="photos"></div>
+    <button type="button" id="add-photo">+ Add Photo</button>
+
+    <br>
+    <button type="button" id="encrypt-btn">🔒 Encrypt & Download secret.enc.json</button>
+
+    <div id="status"></div>
+
+    <script>
+        const photosDiv = document.getElementById('photos');
+        const statusDiv = document.getElementById('status');
+
+        function addPhotoInput() {
+            const wrap = document.createElement('div');
+            wrap.className = 'photo-input';
+            wrap.innerHTML = `
+                <input type="file" accept="image/*" class="photo-file">
+                <input type="text" class="photo-caption" placeholder="Caption for this photo" style="margin-top:0.5rem;">
+                <img class="thumb" style="display:none;">
+            `;
+            photosDiv.appendChild(wrap);
+            const fileInput = wrap.querySelector('.photo-file');
+            const thumb = wrap.querySelector('.thumb');
+            fileInput.addEventListener('change', () => {
+                const f = fileInput.files[0];
+                if (f) {
+                    const r = new FileReader();
+                    r.onload = e => { thumb.src = e.target.result; thumb.style.display = 'block'; };
+                    r.readAsDataURL(f);
+                }
+            });
+        }
+
+        document.getElementById('add-photo').addEventListener('click', addPhotoInput);
+        addPhotoInput(); // start with one
+
+        function fileToDataURL(file) {
+            return new Promise((resolve, reject) => {
+                const r = new FileReader();
+                r.onload = e => resolve(e.target.result);
+                r.onerror = reject;
+                r.readAsDataURL(file);
+            });
+        }
+
+        function bufToBase64(buf) {
+            const bytes = new Uint8Array(buf);
+            let bin = '';
+            for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+            return btoa(bin);
+        }
+
+        async function encrypt() {
+            statusDiv.className = '';
+            statusDiv.textContent = '';
+            const passphrase = document.getElementById('passphrase').value;
+            const letter = document.getElementById('letter').value;
+
+            if (!passphrase) {
+                statusDiv.className = 'status err';
+                statusDiv.textContent = 'Please enter a passphrase.';
+                return;
+            }
+
+            // Collect photos
+            const photos = [];
+            const wraps = document.querySelectorAll('.photo-input');
+            for (const w of wraps) {
+                const file = w.querySelector('.photo-file').files[0];
+                const caption = w.querySelector('.photo-caption').value || '';
+                if (file) {
+                    const dataUrl = await fileToDataURL(file);
+                    photos.push({ caption, data: dataUrl });
+                }
+            }
+
+            const payload = JSON.stringify({ letter, photos });
+            const enc = new TextEncoder();
+            const plaintext = enc.encode(payload);
+
+            // Derive key with PBKDF2
+            const salt = crypto.getRandomValues(new Uint8Array(16));
+            const iv = crypto.getRandomValues(new Uint8Array(12));
+            const iterations = 250000;
+
+            const keyMaterial = await crypto.subtle.importKey(
+                'raw', enc.encode(passphrase), 'PBKDF2', false, ['deriveKey']
+            );
+            const key = await crypto.subtle.deriveKey(
+                { name: 'PBKDF2', salt, iterations, hash: 'SHA-256' },
+                keyMaterial,
+                { name: 'AES-GCM', length: 256 },
+                false,
+                ['encrypt']
+            );
+
+            const ciphertext = await crypto.subtle.encrypt(
+                { name: 'AES-GCM', iv }, key, plaintext
+            );
+
+            const output = {
+                v: 1,
+                iterations,
+                salt: bufToBase64(salt),
+                iv: bufToBase64(iv),
+                data: bufToBase64(ciphertext)
+            };
+
+            const blob = new Blob([JSON.stringify(output)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'secret.enc.json';
+            a.click();
+            URL.revokeObjectURL(url);
+
+            statusDiv.className = 'status ok';
+            statusDiv.innerHTML = `✅ Encrypted ${photos.length} photo(s) + letter into <code>secret.enc.json</code>.<br>Drop this file into your repo root and push. Only someone with the passphrase can read it.`;
+        }
+
+        document.getElementById('encrypt-btn').addEventListener('click', () => {
+            encrypt().catch(err => {
+                statusDiv.className = 'status err';
+                statusDiv.textContent = 'Error: ' + err.message;
+            });
+        });
+    </script>
+</body>
+</html>

@@ -160,11 +160,13 @@ function toggleMusic() {
 musicBtn.addEventListener('click', toggleMusic);
 
 // ============ COUNTDOWN ============
+const TEST_MODE = new URLSearchParams(window.location.search).has('test');
+
 function updateCountdown() {
     const now = new Date();
     const diff = BIRTHDAY - now;
 
-    if (diff <= 0) {
+    if (diff <= 0 || TEST_MODE) {
         countdown.classList.add('hidden');
         cakeSection.classList.add('hidden');
         document.querySelector('.progress-section').classList.add('hidden');
@@ -199,39 +201,145 @@ function updateCountdown() {
     progressText.textContent = `${progress.toFixed(2)}% of the way to Nireshnee's special day!`;
 }
 
-// ============ UNLOCK SECTIONS ============
+// ============ UNLOCK + DECRYPTION ============
 let sectionsUnlocked = false;
 
 function unlockSections() {
     if (sectionsUnlocked) return;
     sectionsUnlocked = true;
 
-    const letterSection = document.getElementById('letter-section');
-    const photoSection = document.getElementById('photo-section');
-    const letterLock = document.getElementById('letter-lock');
-    const photoLock = document.getElementById('photo-lock');
-    const letterContent = document.getElementById('letter-content');
-    const photoContent = document.getElementById('photo-content');
+    const prelockCard = document.getElementById('prelock-card');
+    const prelock = document.getElementById('prelock');
+    const gate = document.getElementById('passphrase-gate');
 
-    // Animate unlock for letter (with slight delay)
+    // Dissolve the pre-lock, then reveal the passphrase gate
     setTimeout(() => {
-        letterSection.classList.add('unlocking');
+        prelockCard.classList.add('unlocking');
+        prelock.classList.add('lock-overlay'); // ensure animation target
         setTimeout(() => {
-            letterLock.style.display = 'none';
-            letterContent.classList.remove('hidden');
-            letterContent.classList.add('visible');
+            prelockCard.classList.add('hidden');
+            gate.classList.remove('hidden');
+            gate.querySelector('.gate-inner').classList.add('visible');
+            document.getElementById('passphrase-input').focus();
         }, 1500);
     }, 2000);
+}
 
-    // Animate unlock for photos (staggered after letter)
+// Convert base64 to ArrayBuffer
+function base64ToBuf(b64) {
+    const bin = atob(b64);
+    const bytes = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+    return bytes.buffer;
+}
+
+async function decryptContent(passphrase) {
+    const res = await fetch('secret.enc.json?v=' + Date.now());
+    if (!res.ok) throw new Error('Could not load encrypted content.');
+    const payload = await res.json();
+
+    const salt = base64ToBuf(payload.salt);
+    const iv = base64ToBuf(payload.iv);
+    const data = base64ToBuf(payload.data);
+    const iterations = payload.iterations || 250000;
+
+    const enc = new TextEncoder();
+    const keyMaterial = await crypto.subtle.importKey(
+        'raw', enc.encode(passphrase), 'PBKDF2', false, ['deriveKey']
+    );
+    const key = await crypto.subtle.deriveKey(
+        { name: 'PBKDF2', salt, iterations, hash: 'SHA-256' },
+        keyMaterial,
+        { name: 'AES-GCM', length: 256 },
+        false,
+        ['decrypt']
+    );
+
+    // Throws if passphrase is wrong (auth tag mismatch)
+    const plaintext = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, data);
+    const json = new TextDecoder().decode(plaintext);
+    return JSON.parse(json);
+}
+
+function renderSecretContent(content) {
+    // Render letter
+    const letterContent = document.getElementById('letter-content');
+    letterContent.innerHTML = `
+        <div class="letter">
+            <h3 class="letter-heading">💌 Dear Nireshnee,</h3>
+            <div class="letter-body">${content.letter || ''}</div>
+        </div>
+    `;
+
+    // Render photos
+    const photoContent = document.getElementById('photo-content');
+    let galleryHTML = `
+        <h3 class="gallery-heading">📸 Our Memories Together</h3>
+        <p class="gallery-subtext">Every photo tells a story of us ✨</p>
+        <div class="photo-gallery">
+    `;
+    (content.photos || []).forEach(photo => {
+        galleryHTML += `
+            <div class="photo-card">
+                <img src="${photo.data}" alt="${(photo.caption || '').replace(/"/g, '&quot;')}">
+                <p class="photo-caption">${photo.caption || ''}</p>
+            </div>
+        `;
+    });
+    galleryHTML += '</div>';
+    photoContent.innerHTML = galleryHTML;
+
+    // Reveal cards
+    const letterSection = document.getElementById('letter-section');
+    const photoSection = document.getElementById('photo-section');
+    letterSection.classList.remove('hidden');
+    letterContent.classList.add('visible');
     setTimeout(() => {
-        photoSection.classList.add('unlocking');
-        setTimeout(() => {
-            photoLock.style.display = 'none';
-            photoContent.classList.remove('hidden');
-            photoContent.classList.add('visible');
-        }, 1500);
-    }, 4000);
+        photoSection.classList.remove('hidden');
+        photoContent.classList.add('visible');
+    }, 600);
+}
+
+function setupPassphraseGate() {
+    const unlockBtn = document.getElementById('unlock-btn');
+    const input = document.getElementById('passphrase-input');
+    const errorEl = document.getElementById('gate-error');
+    const gate = document.getElementById('passphrase-gate');
+
+    async function attempt() {
+        const passphrase = input.value.trim();
+        if (!passphrase) return;
+
+        unlockBtn.disabled = true;
+        unlockBtn.textContent = 'Unlocking...';
+        errorEl.classList.add('hidden');
+
+        try {
+            const content = await decryptContent(passphrase);
+            // Success — hide gate and reveal content
+            gate.classList.add('unlocking');
+            setTimeout(() => {
+                gate.classList.add('hidden');
+                renderSecretContent(content);
+            }, 1000);
+        } catch (err) {
+            // Wrong passphrase or decode failure
+            unlockBtn.disabled = false;
+            unlockBtn.textContent = 'Unlock 💖';
+            errorEl.classList.remove('hidden');
+            // retrigger shake animation
+            errorEl.style.animation = 'none';
+            void errorEl.offsetWidth;
+            errorEl.style.animation = '';
+            input.value = '';
+            input.focus();
+        }
+    }
+
+    unlockBtn.addEventListener('click', attempt);
+    input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') attempt();
+    });
 }
 
 function updateWithFlip(element, newValue, key) {
@@ -626,5 +734,6 @@ initParticles();
 initEffects();
 initTilt();
 initFloatingLetters();
+setupPassphraseGate();
 updateCountdown();
 setInterval(updateCountdown, 1000);
