@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🎂 Birthday Countdown 🎂</title>
+    <title>🎂 Nireshnee's Birthday Countdown 🎂</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
@@ -17,8 +17,8 @@
         <div class="glow-orb orb-3"></div>
 
         <header class="header">
-            <h1 class="title">🎉 Birthday Countdown 🎉</h1>
-            <p class="subtitle">Something amazing is coming on <span class="highlight">July 23, 2026</span></p>
+            <h1 class="title">🎉 Nireshnee's Birthday Countdown 🎉</h1>
+            <p class="subtitle">Get ready to celebrate <span class="name-highlight">Nireshnee</span> on <span class="highlight">July 23, 2026</span></p>
         </header>
 
         <div class="countdown-wrapper">
@@ -73,9 +73,21 @@
         </div>
 
         <div class="celebration hidden" id="celebration">
-            <h2 class="celebration-title">🎂 Happy Birthday! 🎂</h2>
-            <p class="celebration-text">Today is the day! 🥳🎈🎁</p>
+            <h2 class="celebration-title">🎂 Happy Birthday Nireshnee! 🎂</h2>
+            <p class="celebration-text">Today is YOUR day! You are so loved 🥳🎈🎁💖</p>
+            <div class="birthday-message">
+                <p>Wishing you the most magical, beautiful birthday filled with everything your heart desires ✨</p>
+            </div>
         </div>
+
+        <!-- Music Control -->
+        <button class="music-btn" id="music-btn" aria-label="Toggle music">
+            <span class="music-icon" id="music-icon">🔇</span>
+            <span class="music-text" id="music-text">Play Music</span>
+        </button>
+
+        <!-- Audio element - royalty-free happy birthday melody via Web Audio API -->
+        <div id="audio-container"></div>
     </div>
 
     <script src="script.js"></script>

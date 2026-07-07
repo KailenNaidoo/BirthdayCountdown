@@ -354,6 +354,104 @@ body {
     display: none;
 }
 
+/* Name highlight */
+.name-highlight {
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* Birthday message */
+.birthday-message {
+    margin-top: 2rem;
+    padding: 2rem;
+    background: var(--bg-card);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    backdrop-filter: blur(20px);
+    max-width: 500px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.birthday-message p {
+    font-size: 1.2rem;
+    color: var(--text-muted);
+    line-height: 1.8;
+}
+
+/* Music Button */
+.music-btn {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.8rem 1.2rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 50px;
+    color: var(--text);
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.85rem;
+    cursor: pointer;
+    backdrop-filter: blur(20px);
+    transition: all 0.3s ease;
+    z-index: 100;
+}
+
+.music-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: var(--secondary);
+    transform: scale(1.05);
+    box-shadow: 0 0 20px rgba(196, 77, 255, 0.3);
+}
+
+.music-btn.playing {
+    border-color: var(--primary);
+    box-shadow: 0 0 20px rgba(255, 107, 157, 0.3);
+}
+
+.music-btn.playing .music-icon {
+    animation: music-bounce 0.6s ease infinite alternate;
+}
+
+@keyframes music-bounce {
+    0% { transform: scale(1); }
+    100% { transform: scale(1.2) rotate(10deg); }
+}
+
+/* Floating name letters */
+.floating-letters {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 0;
+    overflow: hidden;
+}
+
+.floating-letter {
+    position: absolute;
+    font-family: 'Pacifico', cursive;
+    font-size: 1.5rem;
+    opacity: 0.06;
+    animation: letter-float 15s linear infinite;
+    color: var(--secondary);
+}
+
+@keyframes letter-float {
+    0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+    10% { opacity: 0.06; }
+    90% { opacity: 0.06; }
+    100% { transform: translateY(-100px) rotate(360deg); opacity: 0; }
+}
+
 /* Responsive */
 @media (max-width: 600px) {
     .countdown {
