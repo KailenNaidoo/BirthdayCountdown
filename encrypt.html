@@ -77,6 +77,12 @@
     <label for="timeline">Memory Timeline (one per line, format: Date | Title | Text)</label>
     <textarea id="timeline" style="min-height:120px;" placeholder="2021 | When we met | The day everything changed&#10;2023 | Our trip | Best week ever"></textarea>
 
+    <label for="secretNote">Secret Note (revealed by the easter egg — click the title 5 times)</label>
+    <textarea id="secretNote" style="min-height:120px;" placeholder="A hidden message just for her... use blank lines for paragraphs"></textarea>
+
+    <label for="eggMessages">Easter Egg Messages (one per line — playful lines shown on repeat triggers)</label>
+    <textarea id="eggMessages" style="min-height:100px;" placeholder="You found it again 💕&#10;Still the most amazing person I know 🥰"></textarea>
+
     <label>Photos (with captions)</label>
     <div id="photos"></div>
     <button type="button" id="add-photo">+ Add Photo</button>
@@ -153,6 +159,10 @@
                     return { date: parts[0] || '', title: parts[1] || '', text: parts[2] || '' };
                 });
 
+            const secretNote = document.getElementById('secretNote').value;
+            const eggMessages = document.getElementById('eggMessages').value
+                .split('\n').map(s => s.trim()).filter(Boolean);
+
             // Collect photos
             const photos = [];
             const wraps = document.querySelectorAll('.photo-input');
@@ -165,7 +175,7 @@
                 }
             }
 
-            const payload = JSON.stringify({ letter, reasons, timeline, photos });
+            const payload = JSON.stringify({ letter, reasons, timeline, secretNote, eggMessages, photos });
             const enc = new TextEncoder();
             const plaintext = enc.encode(payload);
 

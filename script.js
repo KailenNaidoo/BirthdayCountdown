@@ -20,6 +20,9 @@ const musicText = document.getElementById('music-text');
 // Store previous values for flip animation
 let prevValues = { days: '', hours: '', minutes: '', seconds: '' };
 
+// Decrypted secret content (letter, photos, reasons, timeline, secretNote, eggMessages)
+let secretData = null;
+
 // Calculate a reasonable start date for progress
 const TOTAL_COUNTDOWN_DAYS = 365;
 const START_DATE = new Date(BIRTHDAY.getTime() - TOTAL_COUNTDOWN_DAYS * 24 * 60 * 60 * 1000);
@@ -258,6 +261,7 @@ async function decryptContent(passphrase) {
 }
 
 function renderSecretContent(content) {
+    secretData = content;
     // ---- Letter ----
     const letterContent = document.getElementById('letter-content');
     letterContent.innerHTML = `
@@ -550,36 +554,137 @@ function initEasterEgg() {
     let clicks = 0;
     let timer = null;
 
-    title.addEventListener('click', () => {
+    title.addEventListener('click', (e) => {
         clicks++;
         clearTimeout(timer);
         timer = setTimeout(() => { clicks = 0; }, 1500);
         if (clicks >= 5) {
             clicks = 0;
-            triggerEasterEgg();
+            triggerEasterEgg(e.clientX, e.clientY);
         }
     });
+
+    // Faint, easy-to-miss hint that the title is clickable
+    setTimeout(() => spawnTitleHint(title), 5000);
+    setInterval(() => spawnTitleHint(title), 15000);
 }
 
-function triggerEasterEgg() {
-    const msg = document.createElement('div');
-    msg.className = 'easter-egg-msg';
-    msg.innerHTML = '💝 You found the secret! Nireshnee, you are one in a million 💝';
-    document.body.appendChild(msg);
-    setTimeout(() => msg.remove(), 4000);
+const DEFAULT_EGG_MESSAGES = [
+    'You found it again 💕',
+    'Still the most amazing person I know 🥰',
+    'Happy Birthday, beautiful ✨',
+    'One in a million 💫',
+    'You make my world brighter 🌟',
+    'Never stop being wonderfully you 💖'
+];
+const DEFAULT_SECRET_NOTE = "Psst... you found the secret 🤫\n\nOut of everyone in the whole world, it's you. It's always been you. I hope today reminds you how deeply loved you are — not just on your birthday, but every single day.\n\nHappy Birthday, my favourite person. 💖";
 
-    const hearts = ['💖', '💕', '💗', '💓', '💞', '❤️', '🥰', '✨'];
-    for (let i = 0; i < 40; i++) {
-        setTimeout(() => {
-            const heart = document.createElement('div');
-            heart.className = 'floating-heart';
-            heart.textContent = hearts[Math.floor(Math.random() * hearts.length)];
-            heart.style.left = Math.random() * 100 + 'vw';
-            heart.style.fontSize = (Math.random() * 1.5 + 1) + 'rem';
-            heart.style.animationDuration = (Math.random() * 2 + 3) + 's';
-            document.body.appendChild(heart);
-            setTimeout(() => heart.remove(), 5000);
-        }, i * 60);
+let eggTriggerCount = 0;
+let eggMsgIndex = 0;
+
+function spawnTitleHint(title) {
+    const rect = title.getBoundingClientRect();
+    const hint = document.createElement('div');
+    hint.className = 'title-hint';
+    hint.textContent = '✨';
+    hint.style.left = (rect.left + Math.random() * rect.width) + 'px';
+    hint.style.top = (rect.top + Math.random() * rect.height) + 'px';
+    document.body.appendChild(hint);
+    setTimeout(() => hint.remove(), 2000);
+}
+
+function playChime() {
+    try {
+        initAudio();
+        if (!audioContext) return;
+        const now = audioContext.currentTime;
+        const notes = [523.25, 659.25, 783.99, 1046.5];
+        notes.forEach((f, i) => {
+            playNote(f, now + i * 0.08, 0.5, 'sine', 0.10);
+            playNote(f * 2, now + i * 0.08, 0.4, 'sine', 0.03);
+        });
+    } catch (e) {}
+}
+
+function heartExplosion(x, y) {
+    const hearts = ['💖', '💕', '💗', '💓', '💞', '❤️', '🥰', '✨', '🌟'];
+    const count = 26;
+    for (let i = 0; i < count; i++) {
+        const heart = document.createElement('div');
+        heart.className = 'egg-heart';
+        heart.textContent = hearts[Math.floor(Math.random() * hearts.length)];
+
+        const angle = (Math.PI * 2 * i) / count + (Math.random() - 0.5) * 0.4;
+        const distance = Math.random() * 220 + 120;
+        const tx = Math.cos(angle) * distance;
+        const ty = Math.sin(angle) * distance;
+
+        heart.style.left = x + 'px';
+        heart.style.top = y + 'px';
+        heart.style.fontSize = (Math.random() * 1.4 + 1) + 'rem';
+        heart.style.setProperty('--tx', tx + 'px');
+        heart.style.setProperty('--ty', ty + 'px');
+        heart.style.animationDuration = (Math.random() * 0.5 + 1) + 's';
+        document.body.appendChild(heart);
+        setTimeout(() => heart.remove(), 1600);
+    }
+}
+
+function showEggToast(text) {
+    const toast = document.createElement('div');
+    toast.className = 'egg-toast';
+    toast.textContent = text;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 2800);
+}
+
+function showSecretNote() {
+    if (document.querySelector('.egg-note-overlay')) return;
+    const noteText = (secretData && secretData.secretNote) ? secretData.secretNote : DEFAULT_SECRET_NOTE;
+
+    const overlay = document.createElement('div');
+    overlay.className = 'egg-note-overlay';
+    overlay.innerHTML = `
+        <div class="egg-note">
+            <div class="egg-note-seal">💌</div>
+            <h3 class="egg-note-title">A Secret Just For You</h3>
+            <p class="egg-note-text" id="egg-note-text"></p>
+            <button class="wish-btn egg-note-close">Close 💖</button>
+        </div>
+    `;
+    document.body.appendChild(overlay);
+
+    const textEl = overlay.querySelector('#egg-note-text');
+    let i = 0;
+    function type() {
+        if (i <= noteText.length) {
+            textEl.textContent = noteText.slice(0, i);
+            i++;
+            const delay = noteText[i - 1] === '\n' ? 180 : 28;
+            setTimeout(type, delay);
+        }
+    }
+    type();
+
+    function close() { overlay.classList.add('closing'); setTimeout(() => overlay.remove(), 300); }
+    overlay.querySelector('.egg-note-close').addEventListener('click', close);
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
+}
+
+function triggerEasterEgg(x, y) {
+    eggTriggerCount++;
+    playChime();
+    heartExplosion(x, y);
+
+    if (eggTriggerCount === 1) {
+        // First discovery: the full typewriter secret note
+        setTimeout(showSecretNote, 400);
+    } else {
+        // Later triggers: playful rotating messages
+        const messages = (secretData && secretData.eggMessages && secretData.eggMessages.length)
+            ? secretData.eggMessages : DEFAULT_EGG_MESSAGES;
+        showEggToast(messages[eggMsgIndex % messages.length]);
+        eggMsgIndex++;
     }
 }
 

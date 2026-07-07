@@ -18,6 +18,14 @@ const payload = {
 <p>This is the <em>real</em> hidden letter — it was encrypted and could only be revealed with the secret passphrase. Nobody could read it just by snooping the files. 🔐</p>
 <p>When you replace this sample with the real thing, your heartfelt words will be safe here, waiting just for you.</p>
 <p class="letter-sign">With all my love,<br><span class="letter-signature">Forever yours 💖</span></p>`,
+    secretNote: "Psst... you found the secret 🤫\n\nOut of everyone in the whole world, it's you. It's always been you. I hope today reminds you how deeply loved you are — not just on your birthday, but every single day.\n\nHappy Birthday, my favourite person. 💖",
+    eggMessages: [
+        'You found it again 💕',
+        'Still the most amazing person I know 🥰',
+        'Happy Birthday, beautiful ✨',
+        'One in a million 💫',
+        'You make my world brighter 🌟'
+    ],
     reasons: [
         'Your smile lights up every room',
         'The way you laugh at your own jokes',
