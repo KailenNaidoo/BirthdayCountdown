@@ -306,6 +306,11 @@ function launchConfetti() {
     if (!isPlaying) {
         toggleMusic();
     }
+
+    // Launch fireworks show
+    if (window.__launchFireworksShow) {
+        window.__launchFireworksShow();
+    }
 }
 
 // ============ PARTICLES ============
@@ -410,6 +415,174 @@ function initFloatingLetters() {
     }
 }
 
+// ============ SHOOTING STARS + FIREWORKS (effects canvas) ============
+let fireworksActive = false;
+
+function initEffects() {
+    const canvas = document.getElementById('effects');
+    const ctx = canvas.getContext('2d');
+
+    let width = canvas.width = window.innerWidth;
+    let height = canvas.height = window.innerHeight;
+
+    const shootingStars = [];
+    const fireworkParticles = [];
+    const fireworkColors = ['#ff6b9d', '#c44dff', '#ffd93d', '#4dffb8', '#4dc9ff', '#ff4d6d', '#ffffff'];
+
+    function spawnShootingStar() {
+        const startX = Math.random() * width;
+        const startY = Math.random() * height * 0.5;
+        const angle = Math.PI / 4 + (Math.random() - 0.5) * 0.5;
+        const speed = Math.random() * 6 + 8;
+        shootingStars.push({
+            x: startX,
+            y: startY,
+            vx: Math.cos(angle) * speed,
+            vy: Math.sin(angle) * speed,
+            len: Math.random() * 80 + 60,
+            life: 1,
+            color: ['#ffffff', '#c9e3ff', '#ffe9b0'][Math.floor(Math.random() * 3)]
+        });
+    }
+
+    function launchFirework(x, y) {
+        const count = 60 + Math.floor(Math.random() * 40);
+        const color = fireworkColors[Math.floor(Math.random() * fireworkColors.length)];
+        const multiColor = Math.random() > 0.5;
+        for (let i = 0; i < count; i++) {
+            const angle = (Math.PI * 2 * i) / count + Math.random() * 0.1;
+            const speed = Math.random() * 5 + 2;
+            fireworkParticles.push({
+                x, y,
+                vx: Math.cos(angle) * speed,
+                vy: Math.sin(angle) * speed,
+                life: 1,
+                decay: Math.random() * 0.015 + 0.008,
+                color: multiColor ? fireworkColors[Math.floor(Math.random() * fireworkColors.length)] : color,
+                size: Math.random() * 2 + 1.5
+            });
+        }
+    }
+
+    function animate() {
+        // fade trail effect
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.fillStyle = 'rgba(10, 0, 21, 0.15)';
+        ctx.fillRect(0, 0, width, height);
+        ctx.globalCompositeOperation = 'lighter';
+
+        // Shooting stars
+        for (let i = shootingStars.length - 1; i >= 0; i--) {
+            const s = shootingStars[i];
+            s.x += s.vx;
+            s.y += s.vy;
+            s.life -= 0.008;
+
+            const tailX = s.x - s.vx * (s.len / 10);
+            const tailY = s.y - s.vy * (s.len / 10);
+            const grad = ctx.createLinearGradient(s.x, s.y, tailX, tailY);
+            grad.addColorStop(0, s.color);
+            grad.addColorStop(1, 'transparent');
+
+            ctx.strokeStyle = grad;
+            ctx.lineWidth = 2;
+            ctx.globalAlpha = Math.max(s.life, 0);
+            ctx.beginPath();
+            ctx.moveTo(s.x, s.y);
+            ctx.lineTo(tailX, tailY);
+            ctx.stroke();
+
+            // star head glow
+            ctx.beginPath();
+            ctx.arc(s.x, s.y, 2, 0, Math.PI * 2);
+            ctx.fillStyle = s.color;
+            ctx.fill();
+
+            if (s.life <= 0 || s.x > width + 100 || s.y > height + 100) {
+                shootingStars.splice(i, 1);
+            }
+        }
+
+        // Fireworks
+        for (let i = fireworkParticles.length - 1; i >= 0; i--) {
+            const p = fireworkParticles[i];
+            p.x += p.vx;
+            p.y += p.vy;
+            p.vy += 0.04; // gravity
+            p.vx *= 0.99;
+            p.vy *= 0.99;
+            p.life -= p.decay;
+
+            ctx.globalAlpha = Math.max(p.life, 0);
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+            ctx.fillStyle = p.color;
+            ctx.shadowBlur = 8;
+            ctx.shadowColor = p.color;
+            ctx.fill();
+            ctx.shadowBlur = 0;
+
+            if (p.life <= 0) {
+                fireworkParticles.splice(i, 1);
+            }
+        }
+
+        ctx.globalAlpha = 1;
+        requestAnimationFrame(animate);
+    }
+
+    animate();
+
+    // Random shooting stars during countdown
+    function shootingStarLoop() {
+        spawnShootingStar();
+        setTimeout(shootingStarLoop, Math.random() * 4000 + 2000);
+    }
+    setTimeout(shootingStarLoop, 2000);
+
+    // Expose firework launcher
+    window.__launchFireworksShow = function () {
+        if (fireworksActive) return;
+        fireworksActive = true;
+        function burst() {
+            const x = width * (0.2 + Math.random() * 0.6);
+            const y = height * (0.15 + Math.random() * 0.35);
+            launchFirework(x, y);
+        }
+        // Sustained show
+        setInterval(burst, 700);
+        for (let i = 0; i < 3; i++) setTimeout(burst, i * 250);
+    };
+
+    window.addEventListener('resize', () => {
+        width = canvas.width = window.innerWidth;
+        height = canvas.height = window.innerHeight;
+    });
+}
+
+// ============ 3D TILT ON CARDS ============
+function initTilt() {
+    const cards = document.querySelectorAll('.time-card');
+
+    document.addEventListener('mousemove', (e) => {
+        const cx = window.innerWidth / 2;
+        const cy = window.innerHeight / 2;
+        const rotX = ((e.clientY - cy) / cy) * -6;
+        const rotY = ((e.clientX - cx) / cx) * 6;
+
+        cards.forEach(card => {
+            card.style.transform = `perspective(800px) rotateX(${rotX}deg) rotateY(${rotY}deg)`;
+        });
+    });
+
+    // Reset on leave
+    document.addEventListener('mouseleave', () => {
+        cards.forEach(card => {
+            card.style.transform = '';
+        });
+    });
+}
+
 // ============ SPARKLES ============
 document.addEventListener('mousemove', (e) => {
     if (Math.random() > 0.9) {
@@ -450,6 +623,8 @@ document.head.appendChild(style);
 
 // ============ INITIALIZE ============
 initParticles();
+initEffects();
+initTilt();
 initFloatingLetters();
 updateCountdown();
 setInterval(updateCountdown, 1000);
