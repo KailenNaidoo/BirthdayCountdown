@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎂 Birthday Countdown 🎂</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <canvas id="particles"></canvas>
+    <div class="container">
+        <div class="glow-orb orb-1"></div>
+        <div class="glow-orb orb-2"></div>
+        <div class="glow-orb orb-3"></div>
+
+        <header class="header">
+            <h1 class="title">🎉 Birthday Countdown 🎉</h1>
+            <p class="subtitle">Something amazing is coming on <span class="highlight">July 23, 2026</span></p>
+        </header>
+
+        <div class="countdown-wrapper">
+            <div class="countdown" id="countdown">
+                <div class="time-block">
+                    <div class="time-card">
+                        <span class="time-value" id="days">00</span>
+                    </div>
+                    <span class="time-label">Days</span>
+                </div>
+                <div class="separator">:</div>
+                <div class="time-block">
+                    <div class="time-card">
+                        <span class="time-value" id="hours">00</span>
+                    </div>
+                    <span class="time-label">Hours</span>
+                </div>
+                <div class="separator">:</div>
+                <div class="time-block">
+                    <div class="time-card">
+                        <span class="time-value" id="minutes">00</span>
+                    </div>
+                    <span class="time-label">Minutes</span>
+                </div>
+                <div class="separator">:</div>
+                <div class="time-block">
+                    <div class="time-card">
+                        <span class="time-value" id="seconds">00</span>
+                    </div>
+                    <span class="time-label">Seconds</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="progress-section">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress-fill"></div>
+                <div class="progress-glow" id="progress-glow"></div>
+            </div>
+            <p class="progress-text" id="progress-text">Loading...</p>
+        </div>
+
+        <div class="cake-section" id="cake-section">
+            <div class="cake">
+                <div class="candle">
+                    <div class="flame"></div>
+                </div>
+                <div class="cake-top"></div>
+                <div class="cake-middle"></div>
+                <div class="cake-bottom"></div>
+            </div>
+        </div>
+
+        <div class="celebration hidden" id="celebration">
+            <h2 class="celebration-title">🎂 Happy Birthday! 🎂</h2>
+            <p class="celebration-text">Today is the day! 🥳🎈🎁</p>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
