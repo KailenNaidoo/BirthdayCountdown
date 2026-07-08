@@ -1327,6 +1327,17 @@ body {
 
 
 /* ============ SPOTIFY EMBED ============ */
+.player-section {
+    margin: 0 auto 3rem;
+    max-width: 640px;
+}
+
+.player-hint {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+}
+
 .spotify-embed {
     margin-top: 1.5rem;
     max-width: 640px;

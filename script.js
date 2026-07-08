@@ -13,9 +13,6 @@ const progressText = document.getElementById('progress-text');
 const celebration = document.getElementById('celebration');
 const countdown = document.getElementById('countdown');
 const cakeSection = document.getElementById('cake-section');
-const musicBtn = document.getElementById('music-btn');
-const musicIcon = document.getElementById('music-icon');
-const musicText = document.getElementById('music-text');
 
 // Store previous values for flip animation
 let prevValues = { days: '', hours: '', minutes: '', seconds: '' };
@@ -143,15 +140,9 @@ function toggleMusic() {
     if (!isPlaying) {
         initAudio();
         isPlaying = true;
-        musicBtn.classList.add('playing');
-        musicIcon.textContent = '🎵';
-        musicText.textContent = 'Playing';
         playMelody(true);
     } else {
         isPlaying = false;
-        musicBtn.classList.remove('playing');
-        musicIcon.textContent = '🔇';
-        musicText.textContent = 'Play Music';
         if (musicTimeout) clearTimeout(musicTimeout);
         currentNotes.forEach(osc => {
             try { osc.stop(); } catch (e) {}
@@ -159,8 +150,6 @@ function toggleMusic() {
         currentNotes = [];
     }
 }
-
-musicBtn.addEventListener('click', toggleMusic);
 
 // ============ COUNTDOWN ============
 const TEST_MODE = new URLSearchParams(window.location.search).has('test');
@@ -337,7 +326,6 @@ function renderSecretContent(content) {
         reasons.length ? 'reasons-section' : null,
         timeline.length ? 'timeline-section' : null,
         'photo-section',
-        'music-section',
         'candle-section',
         'wishjar-section'
     ].filter(Boolean);
@@ -828,11 +816,6 @@ function launchConfetti() {
     }
 
     animateConfetti();
-
-    // Auto-play birthday music
-    if (!isPlaying) {
-        toggleMusic();
-    }
 
     // Launch fireworks show
     if (window.__launchFireworksShow) {

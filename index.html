@@ -79,6 +79,14 @@
             </div>
         </div>
 
+        <!-- Always-on Spotify player (press play to keep music going throughout) -->
+        <div class="player-section" id="player-section">
+            <p class="player-hint">🎧 Press play for the birthday playlist — it'll keep playing right through the countdown 💕</p>
+            <div class="spotify-embed">
+                <iframe style="border-radius:12px" src="https://open.spotify.com/embed/playlist/4LRlycsHcfXCLNzYZ9F3N9?utm_source=generator&theme=0" width="100%" height="152" frameborder="0" allowfullscreen allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+            </div>
+        </div>
+
         <div class="celebration hidden" id="celebration">
             <h2 class="celebration-title">🎂 Happy Birthday Nireshnee! 🎂</h2>
             <p class="celebration-text">Today is YOUR day! You are so loved 🥳🎈🎁💖</p>
@@ -123,17 +131,6 @@
                 <div class="unlocked-content" id="photo-content"></div>
             </div>
 
-            <!-- Spotify playlist -->
-            <div class="locked-card hidden" id="music-section">
-                <div class="unlocked-content">
-                    <h3 class="section-heading">🎧 A Playlist For You</h3>
-                    <p class="gallery-subtext">Songs picked just for you — press play 💕</p>
-                    <div class="spotify-embed">
-                        <iframe style="border-radius:12px" src="https://open.spotify.com/embed/playlist/4LRlycsHcfXCLNzYZ9F3N9?utm_source=generator&theme=0" width="100%" height="380" frameborder="0" allowfullscreen allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
-                    </div>
-                </div>
-            </div>
-
             <!-- Blow out the candles -->
             <div class="locked-card hidden" id="candle-section">
                 <div class="unlocked-content" id="candle-content"></div>
@@ -144,12 +141,6 @@
                 <div class="unlocked-content" id="wishjar-content"></div>
             </div>
         </div>
-
-        <!-- Music Control -->
-        <button class="music-btn" id="music-btn" aria-label="Toggle music">
-            <span class="music-icon" id="music-icon">🔇</span>
-            <span class="music-text" id="music-text">Play Music</span>
-        </button>
 
         <!-- Audio element - royalty-free happy birthday melody via Web Audio API -->
         <div id="audio-container"></div>
