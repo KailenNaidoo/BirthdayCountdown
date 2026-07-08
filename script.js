@@ -191,6 +191,54 @@ function updateCountdown() {
     progressFill.style.width = progress + '%';
     progressGlow.style.left = `calc(${progress}% - 20px)`;
     progressText.textContent = `${progress.toFixed(2)}% of the way to Nireshnee's special day!`;
+
+    // Milestone celebrations
+    checkMilestones(diff);
+}
+
+// ============ COUNTDOWN MILESTONES ============
+// Fires a celebration when the countdown crosses each of these thresholds.
+const MILESTONES = [
+    { id: 'week',  secs: 7 * 24 * 60 * 60, msg: '🎉 One week to go, Nireshnee!' },
+    { id: 'day',   secs: 24 * 60 * 60,     msg: '🥳 Just 24 hours to go!' },
+    { id: 'five',  secs: 5 * 60 * 60,      msg: '✨ Only 5 hours left!' },
+    { id: 'hour',  secs: 60 * 60,          msg: '💖 1 hour to go — almost time!' }
+];
+
+let firstMilestoneCheck = true;
+
+function milestoneFired(id) {
+    try { return localStorage.getItem('nireshnee-ms-' + id) === '1'; }
+    catch (e) { return false; }
+}
+function markMilestone(id) {
+    try { localStorage.setItem('nireshnee-ms-' + id, '1'); } catch (e) {}
+}
+
+function checkMilestones(diffMs) {
+    const remainingSec = diffMs / 1000;
+    MILESTONES.forEach(m => {
+        if (milestoneFired(m.id)) return;
+        if (remainingSec <= m.secs) {
+            markMilestone(m.id);
+            // On first load, silently mark ones already passed (don't ping)
+            if (!firstMilestoneCheck) showMilestone(m.msg);
+        }
+    });
+    firstMilestoneCheck = false;
+}
+
+function showMilestone(message) {
+    const banner = document.createElement('div');
+    banner.className = 'milestone-banner';
+    banner.innerHTML = `<span class="milestone-text">${message}</span>`;
+    document.body.appendChild(banner);
+
+    if (window.__fireworkBurst) window.__fireworkBurst(4);
+    if (typeof playChime === 'function') playChime();
+
+    setTimeout(() => banner.classList.add('leaving'), 4500);
+    setTimeout(() => banner.remove(), 5100);
 }
 
 // ============ UNLOCK + DECRYPTION ============
@@ -1064,6 +1112,18 @@ function initEffects() {
         for (let i = 0; i < 3; i++) setTimeout(burst, i * 250);
     };
 
+    // One-shot burst (for milestones)
+    window.__fireworkBurst = function (times) {
+        times = times || 4;
+        for (let i = 0; i < times; i++) {
+            setTimeout(() => {
+                const x = width * (0.15 + Math.random() * 0.7);
+                const y = height * (0.15 + Math.random() * 0.4);
+                launchFirework(x, y);
+            }, i * 280);
+        }
+    };
+
     window.addEventListener('resize', () => {
         width = canvas.width = window.innerWidth;
         height = canvas.height = window.innerHeight;
@@ -1139,3 +1199,8 @@ initFloatingLetters();
 setupPassphraseGate();
 updateCountdown();
 setInterval(updateCountdown, 1000);
+
+// Preview a milestone banner with ?testms in the URL
+if (new URLSearchParams(window.location.search).has('testms')) {
+    setTimeout(() => showMilestone('✨ Only 5 hours left!'), 1200);
+}
