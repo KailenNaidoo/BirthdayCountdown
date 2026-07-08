@@ -337,6 +337,7 @@ function renderSecretContent(content) {
         reasons.length ? 'reasons-section' : null,
         timeline.length ? 'timeline-section' : null,
         'photo-section',
+        'music-section',
         'candle-section',
         'wishjar-section'
     ].filter(Boolean);
@@ -483,57 +484,73 @@ function renderCandleBlow() {
 }
 
 // ============ WISH JAR ============
-const FEATURED_WISHES = [
+// To let people SEND wishes to you: create a free form at https://formspree.io,
+// then paste your endpoint URL below (e.g. 'https://formspree.io/f/abcdwxyz').
+// Leave blank to just collect wishes locally.
+const WISH_ENDPOINT = '';
+
+// Fallback wish shown if wishes.json can't be loaded
+const FALLBACK_WISHES = [
     {
         from: 'Prenell',
-        paragraphs: [
-            'Happy Birthday Cupcake! 🥳🧁❤️',
-            "I hope your special day is filled with so much love, laughter, happiness, and all the little moments that make birthdays so memorable. May this new chapter of your life bring you endless blessings, beautiful opportunities, good health, peace, and success in everything you do. You deserve a year that's filled with reasons to smile and memories you'll cherish forever. 💖✨",
-            "Although we haven't officially met yet, from everything I've heard and what I've seen, you seem like such a genuine, kind-hearted, and beautiful person inside and out. It's always lovely to come across people who have such a warm presence, and I'm so happy that our paths are crossing. I'm really looking forward to meeting you soon and getting to know you better. 🤍",
-            'Thank you for loving and caring for my brother over this past month. It truly means a lot to know that he has someone who supports him, makes him happy, and brings so much positivity into his life. Seeing him smile is something I\'ll always be grateful for, so thank you for being part of that. ❤️',
-            "I hope you enjoy every second of your birthday and that you're surrounded by all the people who love and appreciate you. May this year be filled with exciting adventures, answered prayers, unforgettable moments, and countless reasons to celebrate. Never stop being the wonderful person you are, and may life continue to bless you abundantly 🥹🤞",
-            "Have the most amazing birthday! I hope it's everything you hoped for and so much more. Enjoy every moment, you deserve it! 🎉🌸💕"
-        ]
+        paragraphs: ['Happy Birthday Cupcake! 🥳🧁❤️ Wishing you a day as wonderful as you are. 💖']
     }
 ];
+
+function renderFeaturedWish(w) {
+    const paras = w.paragraphs || (w.message ? [w.message] : []);
+    return `
+        <div class="featured-wish">
+            ${paras.map((p, i) => `<p class="${i === 0 ? 'featured-wish-open' : ''}">${p}</p>`).join('')}
+            ${w.from ? `<p class="featured-wish-from">— ${w.from}</p>` : ''}
+        </div>
+    `;
+}
 
 function renderWishJar() {
     const el = document.getElementById('wishjar-content');
 
-    const featuredHTML = FEATURED_WISHES.map(w => `
-        <div class="featured-wish">
-            ${w.paragraphs.map((p, i) => `<p class="${i === 0 ? 'featured-wish-open' : ''}">${p}</p>`).join('')}
-            <p class="featured-wish-from">— ${w.from}</p>
-        </div>
-    `).join('');
-
     el.innerHTML = `
         <h3 class="section-heading">🫙 Birthday Wish Jar</h3>
         <p class="gallery-subtext">Wishes from people who love you 💌</p>
-        <div class="featured-wishes">${featuredHTML}</div>
+        <div class="featured-wishes" id="featured-wishes"></div>
         <div class="wish-form">
-            <input type="text" id="wish-input" placeholder="Write a birthday wish..." maxlength="120">
-            <button class="wish-btn" id="wish-submit">Add Wish ✨</button>
+            <input type="text" id="wish-name" class="wish-name-input" placeholder="Your name" maxlength="40">
+            <input type="text" id="wish-input" placeholder="Write a birthday wish..." maxlength="500">
+            <button class="wish-btn" id="wish-submit">Send Wish ✨</button>
         </div>
+        <p class="wish-status hidden" id="wish-status"></p>
         <div class="wish-jar" id="wish-jar"></div>
     `;
 
-    const STORAGE_KEY = 'nireshnee-birthday-wishes';
+    const featured = document.getElementById('featured-wishes');
     const jar = document.getElementById('wish-jar');
+    const nameInput = document.getElementById('wish-name');
     const input = document.getElementById('wish-input');
     const submit = document.getElementById('wish-submit');
+    const status = document.getElementById('wish-status');
+
+    // Load baked-in wishes from wishes.json
+    fetch('wishes.json?v=' + Date.now())
+        .then(r => r.ok ? r.json() : Promise.reject())
+        .then(data => {
+            const wishes = (data && data.wishes && data.wishes.length) ? data.wishes : FALLBACK_WISHES;
+            featured.innerHTML = wishes.map(renderFeaturedWish).join('');
+        })
+        .catch(() => {
+            featured.innerHTML = FALLBACK_WISHES.map(renderFeaturedWish).join('');
+        });
+
+    const STORAGE_KEY = 'nireshnee-birthday-wishes';
+    const colors = ['#ff6b9d', '#c44dff', '#ffd93d', '#4dffb8', '#4dc9ff'];
 
     function loadWishes() {
-        try {
-            return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-        } catch (e) { return []; }
+        try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); }
+        catch (e) { return []; }
     }
-
     function saveWishes(wishes) {
         try { localStorage.setItem(STORAGE_KEY, JSON.stringify(wishes)); } catch (e) {}
     }
-
-    const colors = ['#ff6b9d', '#c44dff', '#ffd93d', '#4dffb8', '#4dc9ff'];
 
     function addBubble(text, animate) {
         const bubble = document.createElement('div');
@@ -545,26 +562,59 @@ function renderWishJar() {
         jar.appendChild(bubble);
     }
 
+    // Render this visitor's own previously-submitted wishes
     loadWishes().forEach(w => addBubble(w, false));
 
-    function submitWish() {
+    function showStatus(msg) {
+        status.textContent = msg;
+        status.classList.remove('hidden');
+    }
+
+    async function submitWish() {
+        const name = nameInput.value.trim();
         const text = input.value.trim();
         if (!text) return;
+
+        const display = name ? `${text} — ${name}` : text;
+
+        // Instant local confirmation
         const wishes = loadWishes();
-        wishes.push(text);
+        wishes.push(display);
         saveWishes(wishes);
-        addBubble(text, true);
+        addBubble(display, true);
         input.value = '';
+        nameInput.value = '';
+
+        // Sparkle burst
         for (let i = 0; i < 8; i++) {
             setTimeout(() => createSparkle(
                 jar.getBoundingClientRect().left + Math.random() * jar.offsetWidth,
                 jar.getBoundingClientRect().top + Math.random() * 60
             ), i * 40);
         }
+
+        // Send to be baked in
+        if (WISH_ENDPOINT) {
+            submit.disabled = true;
+            try {
+                await fetch(WISH_ENDPOINT, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                    body: JSON.stringify({ name: name || 'Anonymous', message: text })
+                });
+                showStatus('Your wish has been sent 💌 It will be added to the jar soon!');
+            } catch (e) {
+                showStatus('Saved here, but sending failed — check your connection.');
+            }
+            submit.disabled = false;
+        } else {
+            showStatus('Wish saved 💖 (Ask Kailen to enable sending so it gets baked in for everyone.)');
+        }
     }
 
     submit.addEventListener('click', submitWish);
     input.addEventListener('keydown', e => { if (e.key === 'Enter') submitWish(); });
+    nameInput.addEventListener('keydown', e => { if (e.key === 'Enter') input.focus(); });
 }
 
 // ============ EASTER EGG (click title 5x) ============

@@ -1325,3 +1325,28 @@ body {
     margin: 0 auto;
 }
 
+
+/* ============ SPOTIFY EMBED ============ */
+.spotify-embed {
+    margin-top: 1.5rem;
+    max-width: 640px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.spotify-embed iframe {
+    display: block;
+    width: 100%;
+}
+
+/* ============ WISH STATUS ============ */
+.wish-status {
+    margin-top: 1rem;
+    font-size: 0.95rem;
+    color: var(--accent);
+    animation: fadeInUp 0.5s ease;
+}
+
+.wish-name-input {
+    max-width: 160px;
+}
