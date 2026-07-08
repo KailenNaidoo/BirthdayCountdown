@@ -483,11 +483,34 @@ function renderCandleBlow() {
 }
 
 // ============ WISH JAR ============
+const FEATURED_WISHES = [
+    {
+        from: 'Prenell',
+        paragraphs: [
+            'Happy Birthday Cupcake! 🥳🧁❤️',
+            "I hope your special day is filled with so much love, laughter, happiness, and all the little moments that make birthdays so memorable. May this new chapter of your life bring you endless blessings, beautiful opportunities, good health, peace, and success in everything you do. You deserve a year that's filled with reasons to smile and memories you'll cherish forever. 💖✨",
+            "Although we haven't officially met yet, from everything I've heard and what I've seen, you seem like such a genuine, kind-hearted, and beautiful person inside and out. It's always lovely to come across people who have such a warm presence, and I'm so happy that our paths are crossing. I'm really looking forward to meeting you soon and getting to know you better. 🤍",
+            'Thank you for loving and caring for my brother over this past month. It truly means a lot to know that he has someone who supports him, makes him happy, and brings so much positivity into his life. Seeing him smile is something I\'ll always be grateful for, so thank you for being part of that. ❤️',
+            "I hope you enjoy every second of your birthday and that you're surrounded by all the people who love and appreciate you. May this year be filled with exciting adventures, answered prayers, unforgettable moments, and countless reasons to celebrate. Never stop being the wonderful person you are, and may life continue to bless you abundantly 🥹🤞",
+            "Have the most amazing birthday! I hope it's everything you hoped for and so much more. Enjoy every moment, you deserve it! 🎉🌸💕"
+        ]
+    }
+];
+
 function renderWishJar() {
     const el = document.getElementById('wishjar-content');
+
+    const featuredHTML = FEATURED_WISHES.map(w => `
+        <div class="featured-wish">
+            ${w.paragraphs.map((p, i) => `<p class="${i === 0 ? 'featured-wish-open' : ''}">${p}</p>`).join('')}
+            <p class="featured-wish-from">— ${w.from}</p>
+        </div>
+    `).join('');
+
     el.innerHTML = `
         <h3 class="section-heading">🫙 Birthday Wish Jar</h3>
-        <p class="gallery-subtext">Leave a birthday wish for Nireshnee — it floats up into the jar 💌</p>
+        <p class="gallery-subtext">Wishes from people who love you 💌</p>
+        <div class="featured-wishes">${featuredHTML}</div>
         <div class="wish-form">
             <input type="text" id="wish-input" placeholder="Write a birthday wish..." maxlength="120">
             <button class="wish-btn" id="wish-submit">Add Wish ✨</button>

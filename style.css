@@ -1067,6 +1067,57 @@ body {
 }
 
 /* ============ WISH JAR ============ */
+.featured-wishes {
+    margin: 1.5rem auto 0;
+    max-width: 620px;
+}
+
+.featured-wish {
+    text-align: left;
+    background: linear-gradient(135deg, rgba(255, 107, 157, 0.08), rgba(196, 77, 255, 0.08));
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 20px;
+    padding: 2rem;
+    margin-bottom: 1.5rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.featured-wish::before {
+    content: '💌';
+    position: absolute;
+    top: -10px;
+    right: 10px;
+    font-size: 4rem;
+    opacity: 0.08;
+}
+
+.featured-wish p {
+    color: var(--text-muted);
+    line-height: 1.85;
+    margin-bottom: 1rem;
+    font-size: 1rem;
+}
+
+.featured-wish-open {
+    font-family: 'Pacifico', cursive;
+    font-size: 1.4rem !important;
+    background: linear-gradient(135deg, var(--primary), var(--accent));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 1.2rem !important;
+}
+
+.featured-wish-from {
+    text-align: right;
+    font-family: 'Pacifico', cursive;
+    font-size: 1.2rem !important;
+    color: var(--primary) !important;
+    margin-bottom: 0 !important;
+    margin-top: 0.5rem;
+}
+
 .wish-form {
     display: flex;
     gap: 0.75rem;
