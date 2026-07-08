@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="ibg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#1a0533"/>
+      <stop offset="1" stop-color="#0a0015"/>
+    </linearGradient>
+    <linearGradient id="cTop" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff9a9e"/><stop offset="1" stop-color="#fecfef"/></linearGradient>
+    <linearGradient id="cMid" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#a18cd1"/><stop offset="1" stop-color="#fbc2eb"/></linearGradient>
+    <linearGradient id="cBot" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffecd2"/><stop offset="1" stop-color="#fcb69f"/></linearGradient>
+    <radialGradient id="fl" cx="0.5" cy="0.7" r="0.6"><stop offset="0" stop-color="#ffd93d"/><stop offset="0.6" stop-color="#ff6b35"/><stop offset="1" stop-color="#ff6b35" stop-opacity="0"/></radialGradient>
+  </defs>
+  <rect width="512" height="512" fill="url(#ibg)"/>
+  <g transform="translate(256,150)">
+    <ellipse cx="0" cy="-4" rx="20" ry="36" fill="url(#fl)"/>
+    <rect x="-9" y="20" width="18" height="70" rx="7" fill="#fff3b0"/>
+    <rect x="-115" y="90" width="230" height="66" rx="20" fill="url(#cTop)"/>
+    <rect x="-145" y="154" width="290" height="72" rx="18" fill="url(#cMid)"/>
+    <rect x="-175" y="224" width="350" height="80" rx="22" fill="url(#cBot)"/>
+    <circle cx="-70" cy="122" r="7" fill="#c44dff"/>
+    <circle cx="10" cy="118" r="7" fill="#4dc9ff"/>
+    <circle cx="80" cy="124" r="7" fill="#ffd93d"/>
+    <circle cx="-30" cy="188" r="7" fill="#ff6b9d"/>
+    <circle cx="90" cy="190" r="7" fill="#4dffb8"/>
+    <circle cx="-110" cy="186" r="7" fill="#ffd93d"/>
+  </g>
+</svg>

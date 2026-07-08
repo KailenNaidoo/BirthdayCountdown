@@ -12,3 +12,10 @@ originals/
 
 # The encrypted bundle IS safe to commit (it's useless without the passphrase)
 !secret.enc.json
+
+# Site design assets (favicon, PWA icons, share image) ARE meant to be public
+!assets/
+!assets/**
+
+# Node modules (only used locally to generate images via sharp)
+node_modules/

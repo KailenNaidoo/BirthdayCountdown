@@ -163,6 +163,7 @@ function updateCountdown() {
         cakeSection.classList.add('hidden');
         document.querySelector('.progress-section').classList.add('hidden');
         celebration.classList.remove('hidden');
+        document.title = '🎉 Happy Birthday Nireshnee! 🎂';
         unlockSections();
         launchConfetti();
         return;
@@ -182,6 +183,9 @@ function updateCountdown() {
     updateWithFlip(hoursEl, hoursStr, 'hours');
     updateWithFlip(minutesEl, minutesStr, 'minutes');
     updateWithFlip(secondsEl, secondsStr, 'seconds');
+
+    // Live countdown in the browser tab
+    document.title = `${days}d ${hoursStr}h ${minutesStr}m · Nireshnee's Birthday 🎂`;
 
     // Update progress
     const totalDuration = BIRTHDAY - START_DATE;
@@ -1203,4 +1207,11 @@ setInterval(updateCountdown, 1000);
 // Preview a milestone banner with ?testms in the URL
 if (new URLSearchParams(window.location.search).has('testms')) {
     setTimeout(() => showMilestone('✨ Only 5 hours left!'), 1200);
+}
+
+// ============ PWA SERVICE WORKER ============
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js').catch(() => {});
+    });
 }

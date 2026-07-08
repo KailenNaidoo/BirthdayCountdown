@@ -1399,3 +1399,29 @@ body {
     0% { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
     100% { opacity: 0; transform: translateX(-50%) translateY(-40px) scale(0.9); }
 }
+
+/* ============ REDUced MOTION SUPPORT ============ */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.001ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.001ms !important;
+        scroll-behavior: auto !important;
+    }
+
+    /* Keep things visible without motion */
+    .glow-orb,
+    .aurora-band,
+    .separator,
+    .flame,
+    .big-flame {
+        animation: none !important;
+        opacity: 0.3;
+    }
+
+    .title {
+        animation: none !important;
+    }
+}
