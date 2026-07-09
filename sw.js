@@ -1,5 +1,7 @@
 // Service worker for offline support
-const CACHE = 'nireshnee-birthday-v1';
+// Strategy: NETWORK-FIRST so updated content (letter, photos, wishes) is always
+// fresh when online; cache is only a fallback for offline use.
+const CACHE = 'nireshnee-birthday-v3';
 const CORE = [
   './',
   './index.html',
@@ -33,19 +35,21 @@ self.addEventListener('fetch', event => {
   if (req.method !== 'GET') return;
 
   const url = new URL(req.url);
-  // Only handle same-origin requests; let Spotify/fonts/etc. go to network
+  // Only handle same-origin requests; let Spotify/fonts/etc. go straight to network
   if (url.origin !== self.location.origin) return;
 
+  // Network-first: always try the network, update the cache, fall back to cache offline
   event.respondWith(
-    caches.match(req, { ignoreSearch: true }).then(cached => {
-      const network = fetch(req).then(res => {
-        if (res && res.status === 200) {
-          const copy = res.clone();
-          caches.open(CACHE).then(cache => cache.put(req, copy));
-        }
-        return res;
-      }).catch(() => cached);
-      return cached || network;
-    })
+    fetch(req).then(res => {
+      if (res && res.status === 200) {
+        const copy = res.clone();
+        caches.open(CACHE).then(cache => cache.put(req, copy));
+      }
+      return res;
+    }).catch(() =>
+      caches.match(req, { ignoreSearch: true }).then(cached =>
+        cached || caches.match('./index.html')
+      )
+    )
   );
 });
