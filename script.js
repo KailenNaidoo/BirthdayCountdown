@@ -562,23 +562,11 @@ function renderWishJar() {
 
     el.innerHTML = `
         <h3 class="section-heading">🫙 Birthday Wish Jar</h3>
-        <p class="gallery-subtext">Wishes from people who love you 💌</p>
+        <p class="gallery-subtext">Wishes from the people who love you 💌</p>
         <div class="featured-wishes" id="featured-wishes"></div>
-        <div class="wish-form">
-            <input type="text" id="wish-name" class="wish-name-input" placeholder="Your name" maxlength="40">
-            <input type="text" id="wish-input" placeholder="Write a birthday wish..." maxlength="500">
-            <button class="wish-btn" id="wish-submit">Send Wish ✨</button>
-        </div>
-        <p class="wish-status hidden" id="wish-status"></p>
-        <div class="wish-jar" id="wish-jar"></div>
     `;
 
     const featured = document.getElementById('featured-wishes');
-    const jar = document.getElementById('wish-jar');
-    const nameInput = document.getElementById('wish-name');
-    const input = document.getElementById('wish-input');
-    const submit = document.getElementById('wish-submit');
-    const status = document.getElementById('wish-status');
 
     // Load baked-in wishes from wishes.json
     fetch('wishes.json?v=' + Date.now())
@@ -590,81 +578,6 @@ function renderWishJar() {
         .catch(() => {
             featured.innerHTML = FALLBACK_WISHES.map(renderFeaturedWish).join('');
         });
-
-    const STORAGE_KEY = 'nireshnee-birthday-wishes';
-    const colors = ['#ff6b9d', '#c44dff', '#ffd93d', '#4dffb8', '#4dc9ff'];
-
-    function loadWishes() {
-        try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); }
-        catch (e) { return []; }
-    }
-    function saveWishes(wishes) {
-        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(wishes)); } catch (e) {}
-    }
-
-    function addBubble(text, animate) {
-        const bubble = document.createElement('div');
-        bubble.className = 'wish-bubble';
-        bubble.textContent = text;
-        bubble.style.background = colors[Math.floor(Math.random() * colors.length)] + '33';
-        bubble.style.borderColor = colors[Math.floor(Math.random() * colors.length)] + '66';
-        if (animate) bubble.classList.add('rising');
-        jar.appendChild(bubble);
-    }
-
-    // Render this visitor's own previously-submitted wishes
-    loadWishes().forEach(w => addBubble(w, false));
-
-    function showStatus(msg) {
-        status.textContent = msg;
-        status.classList.remove('hidden');
-    }
-
-    async function submitWish() {
-        const name = nameInput.value.trim();
-        const text = input.value.trim();
-        if (!text) return;
-
-        const display = name ? `${text} — ${name}` : text;
-
-        // Instant local confirmation
-        const wishes = loadWishes();
-        wishes.push(display);
-        saveWishes(wishes);
-        addBubble(display, true);
-        input.value = '';
-        nameInput.value = '';
-
-        // Sparkle burst
-        for (let i = 0; i < 8; i++) {
-            setTimeout(() => createSparkle(
-                jar.getBoundingClientRect().left + Math.random() * jar.offsetWidth,
-                jar.getBoundingClientRect().top + Math.random() * 60
-            ), i * 40);
-        }
-
-        // Send to be baked in
-        if (WISH_ENDPOINT) {
-            submit.disabled = true;
-            try {
-                await fetch(WISH_ENDPOINT, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-                    body: JSON.stringify({ name: name || 'Anonymous', message: text })
-                });
-                showStatus('Your wish has been sent 💌 It will be added to the jar soon!');
-            } catch (e) {
-                showStatus('Saved here, but sending failed — check your connection.');
-            }
-            submit.disabled = false;
-        } else {
-            showStatus('Wish saved 💖 (Ask Kailen to enable sending so it gets baked in for everyone.)');
-        }
-    }
-
-    submit.addEventListener('click', submitWish);
-    input.addEventListener('keydown', e => { if (e.key === 'Enter') submitWish(); });
-    nameInput.addEventListener('keydown', e => { if (e.key === 'Enter') input.focus(); });
 }
 
 // ============ EASTER EGG (click title 5x) ============
