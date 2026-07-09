@@ -1,7 +1,7 @@
 // Service worker for offline support
 // Strategy: NETWORK-FIRST so updated content (letter, photos, wishes) is always
 // fresh when online; cache is only a fallback for offline use.
-const CACHE = 'nireshnee-birthday-v3';
+const CACHE = 'nireshnee-birthday-v5';
 const CORE = [
   './',
   './index.html',
