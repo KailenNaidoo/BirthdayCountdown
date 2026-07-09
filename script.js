@@ -349,23 +349,33 @@ function renderSecretContent(content) {
         `;
     }
 
-    // ---- Photos ----
+    // ---- Photos (Polaroid style) ----
     const photoContent = document.getElementById('photo-content');
     let galleryHTML = `
         <h3 class="section-heading">📸 Our Memories Together</h3>
         <p class="gallery-subtext">Every photo tells a story of us ✨</p>
-        <div class="photo-gallery">
+        <div class="polaroid-gallery">
     `;
-    (content.photos || []).forEach(photo => {
+    (content.photos || []).forEach((photo, i) => {
+        const tilt = (Math.random() * 6 - 3).toFixed(2);
+        const delay = (i * 0.15).toFixed(2);
         galleryHTML += `
-            <div class="photo-card">
-                <img src="${photo.data}" alt="${(photo.caption || '').replace(/"/g, '&quot;')}">
-                <p class="photo-caption">${photo.caption || ''}</p>
+            <div class="polaroid" style="--tilt: ${tilt}deg; --reveal-delay: ${delay}s" data-index="${i}">
+                <div class="polaroid-inner">
+                    <img src="${photo.data}" alt="${(photo.caption || '').replace(/"/g, '&quot;')}" loading="lazy">
+                </div>
+                <p class="polaroid-caption">${photo.caption || ''}</p>
             </div>
         `;
     });
     galleryHTML += '</div>';
     photoContent.innerHTML = galleryHTML;
+
+    // Lightbox
+    initLightbox(content.photos || []);
+
+    // Scroll reveal
+    initScrollReveal();
 
     // ---- Interactive features (generic, no secret content) ----
     renderCandleBlow();
@@ -1194,6 +1204,94 @@ style.textContent = `
     }
 `;
 document.head.appendChild(style);
+
+// ============ LIGHTBOX ============
+function initLightbox(photos) {
+    if (!photos.length) return;
+
+    // Create lightbox overlay
+    const overlay = document.createElement('div');
+    overlay.className = 'lightbox-overlay hidden';
+    overlay.innerHTML = `
+        <button class="lightbox-close" aria-label="Close">&times;</button>
+        <button class="lightbox-prev" aria-label="Previous">&#10094;</button>
+        <button class="lightbox-next" aria-label="Next">&#10095;</button>
+        <div class="lightbox-img-wrap">
+            <img class="lightbox-img" src="" alt="">
+        </div>
+        <p class="lightbox-caption"></p>
+    `;
+    document.body.appendChild(overlay);
+
+    const img = overlay.querySelector('.lightbox-img');
+    const caption = overlay.querySelector('.lightbox-caption');
+    let current = 0;
+
+    function show(index) {
+        current = (index + photos.length) % photos.length;
+        img.src = photos[current].data;
+        img.alt = photos[current].caption || '';
+        caption.textContent = photos[current].caption || '';
+    }
+
+    function open(index) {
+        show(index);
+        overlay.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function close() {
+        overlay.classList.add('hidden');
+        document.body.style.overflow = '';
+    }
+
+    overlay.querySelector('.lightbox-close').addEventListener('click', close);
+    overlay.querySelector('.lightbox-prev').addEventListener('click', () => show(current - 1));
+    overlay.querySelector('.lightbox-next').addEventListener('click', () => show(current + 1));
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
+
+    document.addEventListener('keydown', (e) => {
+        if (overlay.classList.contains('hidden')) return;
+        if (e.key === 'Escape') close();
+        if (e.key === 'ArrowLeft') show(current - 1);
+        if (e.key === 'ArrowRight') show(current + 1);
+    });
+
+    // Swipe support for mobile
+    let touchX = 0;
+    overlay.addEventListener('touchstart', (e) => { touchX = e.touches[0].clientX; });
+    overlay.addEventListener('touchend', (e) => {
+        const dx = e.changedTouches[0].clientX - touchX;
+        if (Math.abs(dx) > 60) {
+            dx > 0 ? show(current - 1) : show(current + 1);
+        }
+    });
+
+    // Attach click to polaroids
+    document.querySelectorAll('.polaroid').forEach(el => {
+        el.addEventListener('click', () => {
+            const idx = parseInt(el.dataset.index, 10);
+            open(idx);
+        });
+    });
+}
+
+// ============ SCROLL REVEAL ============
+function initScrollReveal() {
+    const items = document.querySelectorAll('.polaroid');
+    if (!items.length) return;
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('revealed');
+                observer.unobserve(entry.target);
+            }
+        });
+    }, { threshold: 0.15, rootMargin: '0px 0px -50px 0px' });
+
+    items.forEach(el => observer.observe(el));
+}
 
 // ============ INITIALIZE ============
 initParticles();
