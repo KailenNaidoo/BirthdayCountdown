@@ -550,9 +550,19 @@ const FALLBACK_WISHES = [
 function renderFeaturedWish(w) {
     const paras = w.paragraphs || (w.message ? [w.message] : []);
     return `
-        <div class="featured-wish">
-            ${paras.map((p, i) => `<p class="${i === 0 ? 'featured-wish-open' : ''}">${p}</p>`).join('')}
-            ${w.from ? `<p class="featured-wish-from">— ${w.from}</p>` : ''}
+        <div class="envelope-card">
+            <div class="envelope-front">
+                <div class="envelope-flap"></div>
+                <div class="envelope-seal">💌</div>
+                <p class="envelope-from">From ${w.from || 'Anonymous'}</p>
+                <p class="envelope-hint">Tap to open</p>
+            </div>
+            <div class="envelope-letter">
+                <div class="envelope-letter-inner">
+                    ${paras.map(p => `<p>${p}</p>`).join('')}
+                    ${w.from ? `<p class="envelope-sign">— ${w.from}</p>` : ''}
+                </div>
+            </div>
         </div>
     `;
 }
@@ -574,10 +584,20 @@ function renderWishJar() {
         .then(data => {
             const wishes = (data && data.wishes && data.wishes.length) ? data.wishes : FALLBACK_WISHES;
             featured.innerHTML = wishes.map(renderFeaturedWish).join('');
+            initEnvelopes();
         })
         .catch(() => {
             featured.innerHTML = FALLBACK_WISHES.map(renderFeaturedWish).join('');
+            initEnvelopes();
         });
+}
+
+function initEnvelopes() {
+    document.querySelectorAll('.envelope-card').forEach(card => {
+        card.addEventListener('click', () => {
+            card.classList.toggle('opened');
+        });
+    });
 }
 
 // ============ EASTER EGG (click title 5x) ============
