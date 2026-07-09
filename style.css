@@ -1327,7 +1327,7 @@ body {
 }
 
 .envelope-card.opened .envelope-letter {
-    max-height: 1200px;
+    max-height: 3000px;
     opacity: 1;
 }
 
