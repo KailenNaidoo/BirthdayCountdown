@@ -19,3 +19,7 @@ originals/
 
 # Node modules (only used locally to generate images via sharp)
 node_modules/
+
+# Local-only content generators — contain PLAINTEXT private letter/passphrase.
+# NEVER commit these. Only the encrypted secret.enc.json is committed.
+*.local.js

@@ -307,7 +307,7 @@ function renderSecretContent(content) {
     const letterContent = document.getElementById('letter-content');
     letterContent.innerHTML = `
         <div class="letter">
-            <h3 class="letter-heading">💌 Dear Nireshnee,</h3>
+            <h3 class="letter-heading">💌 A Letter For You</h3>
             <div class="letter-body">${content.letter || ''}</div>
         </div>
     `;

@@ -722,6 +722,16 @@ body {
     font-size: 1.05rem;
 }
 
+.letter-open {
+    font-family: 'Pacifico', cursive;
+    font-size: 1.5rem !important;
+    background: linear-gradient(135deg, var(--primary), var(--accent));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 1.5rem !important;
+}
+
 .letter-body em {
     color: var(--primary);
     font-style: italic;
