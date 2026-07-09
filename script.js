@@ -328,27 +328,6 @@ function renderSecretContent(content) {
         `;
     }
 
-    // ---- Memory timeline ----
-    const timeline = content.timeline && content.timeline.length ? content.timeline : [];
-    const timelineContent = document.getElementById('timeline-content');
-    if (timeline.length) {
-        timelineContent.innerHTML = `
-            <h3 class="section-heading">📖 Our Story So Far</h3>
-            <div class="timeline">
-                ${timeline.map((t, i) => `
-                    <div class="timeline-item ${i % 2 === 0 ? 'left' : 'right'}">
-                        <div class="timeline-dot"></div>
-                        <div class="timeline-card">
-                            <span class="timeline-date">${t.date || ''}</span>
-                            <h4 class="timeline-title">${t.title || ''}</h4>
-                            <p class="timeline-text">${t.text || ''}</p>
-                        </div>
-                    </div>
-                `).join('')}
-            </div>
-        `;
-    }
-
     // ---- Photos (Polaroid style) ----
     const photoContent = document.getElementById('photo-content');
     let galleryHTML = `
@@ -386,7 +365,6 @@ function renderSecretContent(content) {
     const sections = [
         'letter-section',
         reasons.length ? 'reasons-section' : null,
-        timeline.length ? 'timeline-section' : null,
         'photo-section',
         'candle-section',
         'wishjar-section'
